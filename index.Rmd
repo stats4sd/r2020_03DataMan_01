@@ -1,0 +1,87 @@
+---
+title: "Manipulating Data using dplyr: Part 1"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    df_print: paged
+runtime: shiny_prerendered
+description: >
+  Learn to manipulate data with the package dplyr.
+---
+
+## Overview
+
+[Embed video #1]
+
+In this session we will learn how to manipulate data, in particular, we will learn to select/modify/create columns, filter/order rows and calculate summaries. Except for a few "base-R" commands, we will focus on using dplyr, which is the most commonly used package when it comes to data manipulation. There are two parts in this workbook, as well as a series of exercises and questions.
+
+### Installing and loading the package dplyr
+Like ggplot, dplyr is an additional package that needs to be installed and then loaded. We haven't learnt how to properly do that yet, but in this workbook it is already pre-loaded, so we're good to go!
+
+
+
+```{r setup, include=FALSE}
+library(learnr)
+library(dplyr)
+tutorial_options(exercise.timelimit = 10)
+imdb <- readRDS("imdb2020.RDS")
+options(tibble.width = Inf)
+
+```
+
+## 'imdb' dataset
+
+The "imdb" dataset has been constructed from the subsets of the Internet Movie Database made available for non-commercial purposes by the IMDb team:
+<a href="https://www.imdb.com/interfaces/" target="_blank">https://www.imdb.com/interfaces/</a>
+
+
+It contains the following informations for all the entries having more than 500 votes, that are not of type "tvEpisodes" and for which information about year of release, running time and director(s) was available at the time of extraction (28/09/2020):  
+
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+library(knitr)
+data.frame(Column=c("title","type","year","length","director","birthYear","numVotes","averageRating","animation","action", "adventure", "comedy", "documentary", "fantasy", "romance", "sci_fi", "thriller"),
+           Description=c("popular title of the entry",
+                         "type of entry: movie, short, tvMiniSeries, tvMovie, tvSeries, tvShort, tvSpecial, video or videoGame",
+                         "year of release (for series, year of release of the first episode)",
+                         "duration in minutes",
+                         "director of the entry (if multiple directors, the first one was picked)",
+                         "year of birth of the director",
+                         "number of votes for the entry",
+                         "IMDb's weighted average rating for the entry",
+                        "the entry is of genre animation (TRUE/FALSE)",
+                        "the entry is of genre action (TRUE/FALSE)",
+                        "the entry is of genre adventure (TRUE/FALSE)",
+                        "the entry is of genre comedy (TRUE/FALSE)",
+                        "the entry is of genre documentary (TRUE/FALSE)",
+                        "the entry is of genre fantasy (TRUE/FALSE)",
+                        "the entry is of genre romance (TRUE/FALSE)",
+                        "the entry is of genre science fiction (TRUE/FALSE)",
+                        "the entry is of genre thriller (TRUE/FALSE)")) %>% kable()
+
+```
+
+
+The dataset has 61,776 rows. It's too much to be displayed here. Below are 50 arbitrary rows. Spend a bit of time familiarising yourself with the columns of this dataset. You can use the arrow keys to scroll right and left. And remember that R is case sensitive.
+
+```{r,echo=FALSE}
+DT::datatable(imdb[c(1:50)*1000,])
+```
+
+## Select
+
+The function select() allows you to retrieve columns from a dataset. Inside the parenthesis of the function, you first indicate the dataset, and then the columns you want to keep
+
+Let's first retrieve the column title of the imdb dataset.
+
+```{r select_1_, exercise = TRUE}
+select(imdb, title)
+class(imdb)
+```
+
+```{r select_1__, exercise = TRUE}
+filter(imdb, averageRating==max(averageRating) & type=="movie")%>%
+  select(title, year, length)
+```
+

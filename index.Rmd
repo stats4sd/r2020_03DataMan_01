@@ -13,15 +13,32 @@ description: >
 
 ## Overview
 
-In this session, we will learn how to manipulate data and in particular, to select/modify/create columns, filter/order rows and calculate summaries. Except for a few "base-R" commands at the very beginning, we will focus on using the package dplyr, which is probably the most commonly used package when it comes to this sort of data manipulation. I'm saying this "sort of data manipulation", because we are not going to talk about more advanced manipulations like merging datasets or going from wide to long format. We will discuss these later, during the last session of the course.
+In this session, we will learn how to manipulate data and in particular, to select/modify/create columns, filter/order rows and calculate summaries. Knowing how to manipulate data is an essential skill that anyone working with data needs to acquire. Except for a few "base-R" commands at the very beginning, we will focus on using the package `dplyr`, which is part of tidyverse, like ggplot2, and is probably the most commonly used package when it comes to this sort of data manipulation. I'm saying this *sort of data manipulation*, because we are not going to talk about more advanced manipulations like merging datasets or going from wide to long format. We will discuss these later, during the last session of the course.
 
-This session is split into two parts, and you'll have a series of exercises and questions along the way and at the end of the session.
+This session is split into two parts, and you'll have a series of exercises and questions along the way and at the end.
 
-Let's start with a video where I give you an overview of what we'll be learning in this first workbook
+1. In the first part - this workbook - we will mainly focus on learning how to use 5 of the 6 core functions of the package dplyr. These functions will help you perform all the data manipulations mentioned in the first sentence, that is:
+    + select columns - with `select()`
+    + filter rows - with `filter()`
+    + reorder rows - with `arrange()`
+    + make summaries - with `summarize()`
+    + create/modify columns - with `mutate()`
+
+2. In the second part, we will learn how to efficiently combine all these functions and a couple of new ones, to perform all the complex sequences of manipulations that you will need in your work. In particular, we will learn to
+    + perform a sequence of manipulation
+    + use the function `group_by()`
+    + use the pipe operator `%>%`
+
+
+Let's start with a video where I give you more information about data manipulation, the package dplyr and its core functions.
 
 [Embed video #1]
 
 
+
+### loading dplyr
+
+Like ggplot, dplyr is an additional package that needs to be installed and then loaded. We haven't learnt how to properly do that yet, but in this workbook, dplyr is already pre-loaded, so we're good to go and learn about the core functions of dplyr!
 
 
 ```{r setup, include=FALSE}
@@ -75,62 +92,11 @@ DT::datatable(imdb[c(1:50),])
 For the rest of this workbook, we limited the number of lines of each output to 50 as well. We figured that you and our server wouldn't mind not having the 60,000 rows of data outputted each time you try a new command.
 
 
-## base-R operators
-
-In the video, you briefly saw a few data manipulation commands coded in base-R, that is, without using any additional package. We advice you to do all your basic data manipulations with dplyr instead, because once you understand its logic, it makes thinks much simpler, faster and readable. However, there are a couple of base-R manipulation operators, that are important to know about, because you will inevitably see some code using them when you google, and you will also need them from time to time.
-
-### The dollar sign
-
-You already know about the dollar operator `$`, used to retrieve a specific column.
-
-```{r base_1, exercise = TRUE}
-imdb$title
-```
-
-But we haven't talked about the square brackets yet.
-
-### The square brackets
-
-The operator square brackets `[` `]` allows you to retrieve a subset of your data using the position of the rows and columns. The syntax is as follows:
-
-DATAFRAMENAME`[`ROW NUMBERS, COLUMN NUMBERS`]`
-
-Where leaving the row/column numbers blank is equivalent to asking R for all the rows/columns. Here we ask for the 1st row and for all the columns
-```{r base_2, exercise = TRUE}
-imdb[1,]
-```
-
-And here we retrieve all the rows, but only the 5th column (number of votes)
-```{r base_3, exercise = TRUE}
-imdb[,5]
-```
-
-We can also indicate both, a row number and a column number
-
-```{r base_4, exercise = TRUE}
-imdb[3,5]
-```
-
-And instead of single values, we can indicate ranges of values inside the square brackets, using the function `c()`. Here, we are retrieving the columns 1, 5, 6 (title, number of votes, average rating), for the rows 2, 3 and 10.
-```{r base_5, exercise = TRUE}
-imdb[c(2,3,10), c(1,5,6)]
-```
-
-
-It's not a very practical way to retrieve rows and columns though. We can do more than that with the square bracket operator - as I said in the video, we can do any type of data manipulation with base-R only - but this is where the code starts to get messy and difficult to read. Anyway, we know the basics of base-R manipulation. Let's move on and learn about dplyr!
-
-
-
-
-## Installing dplyr
-
-Like ggplot, dplyr is an additional package that needs to be installed and then loaded. We haven't learnt how to properly do that yet, but in this workbook, dplyr is already pre-loaded, so we're good to go and learn about the core functions of dplyr!
-
 
 
 ## select()
 
-The function `select()` allows you to retrieve columns from a dataset. Inside the parenthesis of the function you first indicate the dataset, and then the columns you want to keep
+The function `select()` allows you to retrieve columns from a dataset. Inside the function you first indicate the dataset, and then the columns you want to keep
 
 Let's first retrieve the column `title`.
 
@@ -153,7 +119,7 @@ select(imdb, year, numVotes, title, length)
 ```
 
 
-When you want to retrieve lots of columns, it quickly becomes painful to list them all individually. Instead, you can use the operator colon `:` which asks R to retrieve all the columns that are positioned between the columns you indicate to the left and right of the colon. You could translate it by "to". So in the following command, we are asking R to retrieve all the columns from title to length:
+When you want to retrieve lots of columns, it quickly becomes painful to list them all individually. Instead, you can use a colon `:` which asks R to retrieve all the columns that are positioned between the columns you indicate to the left and right of the colon. You could translate the colon by **to** and `title:length` by "all the columns from title **to** length" . So in the following command, we are asking R to retrieve all the columns from title to length:
 
 ```{r select_4, exercise = TRUE}
 select(imdb,title:length)

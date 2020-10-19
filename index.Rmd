@@ -10,14 +10,17 @@ description: >
   Learn to manipulate data with the package dplyr.
 ---
 
+
 ## Overview
+
+In this session, we will learn how to manipulate data and in particular, to select/modify/create columns, filter/order rows and calculate summaries. Except for a few "base-R" commands at the very beginning, we will focus on using the package dplyr, which is probably the most commonly used package when it comes to this sort of data manipulation. I'm saying this "sort of data manipulation", because we are not going to talk about more advanced manipulations like merging datasets or going from wide to long format. We will discuss these later, during the last session of the course.
+
+This session is split into two parts, and you'll have a series of exercises and questions along the way and at the end of the session.
+
+Let's start with a video where I give you an overview of what we'll be learning in this first workbook
 
 [Embed video #1]
 
-In this session we will learn how to manipulate data, in particular, we will learn to select/modify/create columns, filter/order rows and calculate summaries. Except for a few "base-R" commands, we will focus on using dplyr, which is the most commonly used package when it comes to data manipulation. There are two parts in this workbook, as well as a series of exercises and questions.
-
-### Installing and loading the package dplyr
-Like ggplot, dplyr is an additional package that needs to be installed and then loaded. We haven't learnt how to properly do that yet, but in this workbook it is already pre-loaded, so we're good to go!
 
 
 
@@ -25,14 +28,13 @@ Like ggplot, dplyr is an additional package that needs to be installed and then 
 library(learnr)
 library(dplyr)
 tutorial_options(exercise.timelimit = 10)
+options(max.print=50)
 imdb <- readRDS("imdb2020.RDS")
-options(tibble.width = Inf)
-
 ```
 
 ## 'imdb' dataset
 
-The "imdb" dataset has been constructed from the subsets of the Internet Movie Database made available for non-commercial purposes by the IMDb team:
+For this session, we are going to use a dataset called "imdb", which we constructed from the subsets of the Internet Movie Database made available for non-commercial purposes by the IMDb team:
 <a href="https://www.imdb.com/interfaces/" target="_blank">https://www.imdb.com/interfaces/</a>
 
 
@@ -41,15 +43,15 @@ It contains the following informations for all the entries having more than 500 
 
 ```{r, echo=FALSE,message=FALSE,warning=FALSE}
 library(knitr)
-data.frame(Column=c("title","type","year","length","director","birthYear","numVotes","averageRating","animation","action", "adventure", "comedy", "documentary", "fantasy", "romance", "sci_fi", "thriller"),
+data.frame(Column=c("title","type","year","length","numVotes","averageRating","director","birthYear","animation","action", "adventure", "comedy", "documentary", "fantasy", "romance", "sci_fi", "thriller"),
            Description=c("popular title of the entry",
                          "type of entry: movie, short, tvMiniSeries, tvMovie, tvSeries, tvShort, tvSpecial, video or videoGame",
                          "year of release (for series, year of release of the first episode)",
                          "duration in minutes",
-                         "director of the entry (if multiple directors, the first one was picked)",
-                         "year of birth of the director",
                          "number of votes for the entry",
                          "IMDb's weighted average rating for the entry",
+                         "director of the entry (if multiple directors, the first one was picked)",
+                         "year of birth of the director",
                         "the entry is of genre animation (TRUE/FALSE)",
                         "the entry is of genre action (TRUE/FALSE)",
                         "the entry is of genre adventure (TRUE/FALSE)",
@@ -63,25 +65,320 @@ data.frame(Column=c("title","type","year","length","director","birthYear","numVo
 ```
 
 
-The dataset has 61,776 rows. It's too much to be displayed here. Below are 50 arbitrary rows. Spend a bit of time familiarising yourself with the columns of this dataset. You can use the arrow keys to scroll right and left. And remember that R is case sensitive.
+The dataset has 61,776 rows. It's too much to be displayed here. Below are 50 arbitrary rows though. Spend a bit of time familiarising yourself with the columns of this dataset. You can use the arrow keys to scroll right and left.
 
 ```{r,echo=FALSE}
-DT::datatable(imdb[c(1:50)*1000,])
+DT::datatable(imdb[c(1:50),])
+
 ```
 
-## Select
+For the rest of this workbook, we limited the number of lines of each output to 50 as well. We figured that you and our server wouldn't mind not having the 60,000 rows of data outputted each time you try a new command.
 
-The function select() allows you to retrieve columns from a dataset. Inside the parenthesis of the function, you first indicate the dataset, and then the columns you want to keep
 
-Let's first retrieve the column title of the imdb dataset.
+## base-R operators
 
-```{r select_1_, exercise = TRUE}
+In the video, you briefly saw a few data manipulation commands coded in base-R, that is, without using any additional package. We advice you to do all your basic data manipulations with dplyr instead, because once you understand its logic, it makes thinks much simpler, faster and readable. However, there are a couple of base-R manipulation operators, that are important to know about, because you will inevitably see some code using them when you google, and you will also need them from time to time.
+
+### The dollar sign
+
+You already know about the dollar operator `$`, used to retrieve a specific column.
+
+```{r base_1, exercise = TRUE}
+imdb$title
+```
+
+But we haven't talked about the square brackets yet.
+
+### The square brackets
+
+The operator square brackets `[` `]` allows you to retrieve a subset of your data using the position of the rows and columns. The syntax is as follows:
+
+DATAFRAMENAME`[`ROW NUMBERS, COLUMN NUMBERS`]`
+
+Where leaving the row/column numbers blank is equivalent to asking R for all the rows/columns. Here we ask for the 1st row and for all the columns
+```{r base_2, exercise = TRUE}
+imdb[1,]
+```
+
+And here we retrieve all the rows, but only the 5th column (number of votes)
+```{r base_3, exercise = TRUE}
+imdb[,5]
+```
+
+We can also indicate both, a row number and a column number
+
+```{r base_4, exercise = TRUE}
+imdb[3,5]
+```
+
+And instead of single values, we can indicate ranges of values inside the square brackets, using the function `c()`. Here, we are retrieving the columns 1, 5, 6 (title, number of votes, average rating), for the rows 2, 3 and 10.
+```{r base_5, exercise = TRUE}
+imdb[c(2,3,10), c(1,5,6)]
+```
+
+
+It's not a very practical way to retrieve rows and columns though. We can do more than that with the square bracket operator - as I said in the video, we can do any type of data manipulation with base-R only - but this is where the code starts to get messy and difficult to read. Anyway, we know the basics of base-R manipulation. Let's move on and learn about dplyr!
+
+
+
+
+## Installing dplyr
+
+Like ggplot, dplyr is an additional package that needs to be installed and then loaded. We haven't learnt how to properly do that yet, but in this workbook, dplyr is already pre-loaded, so we're good to go and learn about the core functions of dplyr!
+
+
+
+## select()
+
+The function `select()` allows you to retrieve columns from a dataset. Inside the parenthesis of the function you first indicate the dataset, and then the columns you want to keep
+
+Let's first retrieve the column `title`.
+
+```{r select_1, exercise = TRUE}
 select(imdb, title)
-class(imdb)
 ```
 
-```{r select_1__, exercise = TRUE}
-filter(imdb, averageRating==max(averageRating) & type=="movie")%>%
-  select(title, year, length)
+
+To retrieve more than one column, simply list all the columns you want, separated with commas. Don't forget that R is case sensitive by the way. If you spell the name of a column wrongly, it will not work!
+
+```{r select_2, exercise = TRUE}
+select(imdb, title, year, length, numVotes)
 ```
+
+
+`select()` follows your instructions, so if you change the order of the columns in your command, the order in the output will also change.
+
+```{r select_3, exercise = TRUE}
+select(imdb, year, numVotes, title, length)
+```
+
+
+When you want to retrieve lots of columns, it quickly becomes painful to list them all individually. Instead, you can use the operator colon `:` which asks R to retrieve all the columns that are positioned between the columns you indicate to the left and right of the colon. You could translate it by "to". So in the following command, we are asking R to retrieve all the columns from title to length:
+
+```{r select_4, exercise = TRUE}
+select(imdb,title:length)
+```
+
+And you can combine both methods to try and get all the columns you want in the least amount of effort.
+
+```{r select_5, exercise = TRUE}
+select(imdb, title, director:numVotes, thriller, comedy:fantasy)
+```
+
+
+**Question: Shorten the following command by using the "colon" operator whenever it's possible**
+```{r select_6, exercise=TRUE}
+select(imdb, title, type, year, director, numVotes, animation, action, adventure, comedy, documentary)
+```
+
+```{r select_6-solution}
+select(imdb, title:year, director, numVotes, animation:documentary)
+```
+
+
+
+## filter()
+
+When you want to retrieve specific rows rather than columns, you use the function `filter()`. The way it works is similar, except that our rows don't have names, so we use conditions on some of our columns instead. In the command below, the expression `year>2019` tells R that we want all the rows for which the column year has a value greater than 2019.
+
+```{r filter_1, exercise = TRUE}
+filter(imdb, year>2019)
+```
+
+
+In R, the syntax to check if a value is greater or lower than another value is intuitive. You use the symbols `>` and `<`.
+However, to check if a value is EQUAL TO another value, you need to use `==`, not `=`. That's because a single equal has another use:
+
+- A single equals sign is a *statement*. So `x=y` sets x to be equal y.
+- A double equals sign is a *question*. Therefore `x==y` asks *is x equal to y?*
+
+So to retrieve all the entries directed by Quentin Tarantino, we use the double equals sign.
+```{r filter_2, exercise = TRUE}
+filter(imdb, director=="Quentin Tarantino")
+```
+
+Note that in R, you will not always get an error when your command is incorrect. For example, if you misspell "Quentin Tarantino" you will just get no result:
+
+```{r filter_3, exercise = TRUE}
+filter(imdb, director=="Quentin Tarentino")
+```
+
+That's because even though R does not give you the answer you want, the command you wrote is totally valid. You're asking R to retrieve all the rows where director is equal to "Quentin Tarentino". There are none, since Tar**a**ntino is written with an **a**, not an **e**. If you were to write "**D**irector" instead of "**d**irector" on the left of the double equals sign though, you would get an error, because there's no column named "Director", so R cannot check the condition. Again, R is case sensitive!
+
+
+### using multiple conditions
+
+You can also use multiple conditions and additional functions to filter rows. Here are the logical symbols that you can use when building conditions in R:
+
+`==` means EQUALS  
+`&` means AND  
+`!` means NOT  
+`|` means OR  
+`<` means LOWER THAN  
+`>` means GREATER THAN  
+`<=` means LOWER OR EQUAL TO  
+`>=` means GREATER OR EQUAL TO
+
+
+Let's try to retrieve the rows corresponding to entries of type `movie`, that are of length greater than three hours (180 minutes), and that were released in 2019 or later. Do you know some of these movies?
+
+```{r filter_4, exercise = TRUE}
+filter(imdb, type=="movie" & length>180 & year>=2019)
+```
+
+The command above looks complicated, but it really isn't. We are just asking for the rows that satisfy the condition:
+
+> type EQUALS "movie" AND length is GREATER THAN 180 minutes AND year of release is GREATER OR EQUAL TO 2019.
+
+
+
+We can also use functions like `max()` or `min()` to help us with the filtering. Let's do what we are all dying to do: Find out which entry in the imdb dataset is rated the worst!
+```{r filter_5, exercise = TRUE}
+filter(imdb, averageRating==min(averageRating))
+```
+
+Weirdly, when I look at the number of votes, this result kinda makes me want to watch the movie released in 2017. I think I'll pass on the Justin Bieber one though.
+
+As you see, we didn't get one single result here. That's because filter retrieves *all* the rows that satisfy the specified condition, and we have several entries that have an average rating of 1!
+
+
+**Question: write the command that would display the entry that is rated the best in the imdb dataset**
+```{r filter_6, exercise=TRUE}
+
+```
+
+```{r filter_6-solution}
+filter(imdb, averageRating==max(averageRating))
+```
+
+Don't spend too much time googling this movie. We still have lots to do.
+
+
+## arrange()
+
+I don't know about you, but I would really like to know which entries have received the most number of votes. We could use the command `filter(imdb, numVotes==max(numVotes))`, but that would likely give us only one entry. 
+
+Instead, we can use the function `arrange()`, which orders the rows based on some columns. We first enter the dataset and then we indicate the column by which we want to order the dataset.
+
+Let's try:
+
+```{r arrange_1, exercise = TRUE}
+arrange(imdb, numVotes)
+```
+Huh, I don't know any of these entries! That's because by default, `arrange()` orders your dataset by increasing values of the indicated column. To order the other way, we need to encapsulate our column inside the function `desc()` - "desc" for *descending*
+
+```{r arrange_2, exercise = TRUE}
+arrange(imdb, desc(numVotes))
+```
+
+**Question: What are the shortest entries of the imdb dataset?**
+```{r arrange_3, exercise = TRUE}
+
+```
+
+```{r arrange_3-solution}
+arrange(imdb, length)
+```
+
+
+## summarize()
+
+The next function we need to learn about is `summarize()`, which summarizes our dataset to one single row, by performing the calculation that we indicate after the first argument, which is the dataframe.
+
+For example, to know the total number of votes of the imdb dataset we could calculate the sum of the column number of votes using the function `sum()`
+```{r summarize_1, exercise = TRUE}
+summarise(imdb, sum(numVotes))
+```
+
+It's good to give a proper name to the calculations that we do though, especially if later, we want to use the result of such command:
+
+```{r summarize_2, exercise = TRUE}
+summarise(imdb, totVotes=sum(numVotes))
+```
+
+We can also ask R to give us more than one summary, by listing the calculations we want to perform, separated with commas.
+
+```{r summarize_3, exercise = TRUE}
+summarise(imdb, entries=n(), meanVotes=mean(numVotes), meanRating=mean(averageRating), sdRating=sd(averageRating))
+```
+Here we used the functions `mean()` and `sd()` to calculate the mean, and standard deviation of the column inside their parenthesis. We also used the function `n()`, which simply counts the number of rows.
+
+**Question: Use the function summarize to calculate both, the earliest, and the median year of release of all the entries? Give sensible names to these calculations. Are you surprised by the results? - Reminder: the function to calculate the median is median()**
+```{r summarize_4, exercise = TRUE}
+
+```
+
+```{r summarize_4-solution}
+summarize(imdb, ealiestYear = min(year), medianYear = median(year)) 
+
+# Personally, I was expecting the median year of release to be relatively recent, but probably not as recent as 2005. Given the definition of the median, this result means that all the entries released between 1874 and 2005 count for only 50% of all the entries!
+# I'm pretty sure though, that this number does not accurately reflect the actual amount of cinematographic creations released in the early years, as I suspect that most of the not so famous creations have not been entered in the database. Plus lots of the early entries may have fewer votes than the equivalent recent ones and so they may not have passed the cut off of 500 votes to be in the dataset.
+```
+
+
+
+## mutate()
+
+The last function in this workbook is `mutate()`. It is used to modify or create new columns. The syntax is as follows: We indicate our dataset first, as always, and then we provide the calculations that we want to perform for our new columns.
+
+For example, if we wanted to roughly calculate the age of the director at the time of release of their entries, we could subtract the year of birth from the year of release:
+
+```{r mutate_1, exercise = TRUE}
+mutate(imdb, age = year-birthYear)
+```
+
+Like for the summarize function, we could omit naming our new column, but then R would just use the calculation itself as the column name. That's what happened in the video, I know. I never said I was a great example!
+
+
+
+
+In mutate like in summarize, we can use functions like `mean()`, `max()`, etc. in our calculation. Let's create an indicator of popularity of an entry, by dividing the number of votes for a specific entry by the maximum number of votes of any entry in the dataset
+
+```{r mutate_2, exercise = TRUE}
+mutate(imdb, popularity = numVotes/max(numVotes))
+```
+
+This indicator will take the value of 1 for the most popular entry and a value very close to 0 for the entries that received only 500 votes.
+
+
+Finally, we can create multiple columns at once, by separating the associated calculations with commas.
+
+```{r mutate_3, exercise = TRUE}
+mutate(imdb, age = year-birthYear, popularity = numVotes/max(numVotes))
+```
+
+Also note that I said that mutate can also "modify" a column. You achieve that by using an already existing column as the name of the new column. For example, to make our column name show the duration of the entries in hours rather than minutes, we could do the following:
+
+```{r mutate_4, exercise = TRUE}
+mutate(imdb, length = length/60)
+```
+You need to be careful when modifying existing columns though. In general, as it's not too much of a pain to have lots of columns - since we have the function `select()` to pick the ones we want - we often prefer to create new columns rather than modifying existing ones.
+
+
+**Question: calculate the number of votes by minute of screening received by the entries of the imdb dataset. Give it a sensible name**
+
+```{r mutate_5, exercise = TRUE}
+
+```
+
+```{r mutate_5-solution}
+mutate(imdb, votesByMin = numVotes/length)
+
+```
+
+
+Ok, I'm starting to be frustrated now, because the columns we created with mutate() seem quite interesting, but they are kinda useless if we don't use other functions to explore them further. Next workbook pleaaaase!
+
+## Appendix: Useful reference links  
+
+
+The official dplyr documentation: <a href="https://dplyr.tidyverse.org/" target="_blank">https://dplyr.tidyverse.org/</a> 
+
+dplyr CheatSheet:<a href="https://github.com/rstudio/cheatsheets/blob/master/data-transformation.pdf" target="_blank">https://github.com/rstudio/cheatsheets/blob/master/data-transformation.pdf   </a>  
+
+Data Manipulation Tools - Rstudio video:
+<a href="https://www.youtube.com/watch?v=Zc_ufg4uW4U" target="_blank">dplyr -- Pt 3 Intro to the Grammar of Data Manipulation with R   </a> 
+
+Some documentation on subsetting r-objects using base-R: <a href="https://bookdown.org/rdpeng/rprogdatascience/subsetting-r-objects.html" target="_blank">https://bookdown.org/rdpeng/rprogdatascience/subsetting-r-objects.html </a> 
+
 

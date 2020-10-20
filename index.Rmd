@@ -21,7 +21,7 @@ This session is split into two parts, and you'll have a series of exercises and 
     + select columns - with `select()`
     + filter rows - with `filter()`
     + reorder rows - with `arrange()`
-    + make summaries - with `summarize()`
+    + make summaries - with `summarise()`
     + create/modify columns - with `mutate()`
 
 2. In the second part, we will learn how to efficiently combine all these functions and a couple of new ones, to perform all the complex sequences of manipulations that you will need in your work. In particular, we will learn to
@@ -94,6 +94,10 @@ For the rest of this workbook, we limited the number of lines of each output to 
 
 
 
+
+
+
+
 ## select()
 
 The function `select()` allows you to retrieve columns from a dataset. Inside the function you first indicate the dataset, and then the columns you want to keep
@@ -105,11 +109,19 @@ select(imdb, title)
 ```
 
 
-To retrieve more than one column, simply list all the columns you want, separated with commas. Don't forget that R is case sensitive by the way. If you spell the name of a column wrongly, it will not work!
+To retrieve more than one column, simply list all the columns you want, separated with commas.
 
 ```{r select_2, exercise = TRUE}
 select(imdb, title, year, length, numVotes)
 ```
+
+
+Don't forget that R is case sensitive by the way. If you spell the name of a column wrongly, it will not work!  Can you spot what is wrong in the command below?
+
+```{r select_2_bis, exercise = TRUE}
+select(imdb, title, year, length, numvotes)
+```
+
 
 
 `select()` follows your instructions, so if you change the order of the columns in your command, the order in the output will also change.
@@ -131,8 +143,12 @@ And you can combine both methods to try and get all the columns you want in the 
 select(imdb, title, director:numVotes, thriller, comedy:fantasy)
 ```
 
+Note that if you struggle finding the names of your columns, `colnames()` is a quick way to list them all: 
+```{r select_5b, exercise=TRUE}
+colnames(imdb)
+```
 
-**Question: Shorten the following command by using the "colon" operator whenever it's possible**
+**Question: Shorten the following command by using the "colon" operator whenever it's possible **
 ```{r select_6, exercise=TRUE}
 select(imdb, title, type, year, director, numVotes, animation, action, adventure, comedy, documentary)
 ```
@@ -141,11 +157,9 @@ select(imdb, title, type, year, director, numVotes, animation, action, adventure
 select(imdb, title:year, director, numVotes, animation:documentary)
 ```
 
-
-
 ## filter()
 
-When you want to retrieve specific rows rather than columns, you use the function `filter()`. The way it works is similar, except that our rows don't have names, so we use conditions on some of our columns instead. In the command below, the expression `year>2019` tells R that we want all the rows for which the column year has a value greater than 2019.
+When you want to retrieve specific rows rather than columns, you use the function `filter()`. The way it works is similar to `select()`: we write the data first, and then we indicate the rows that we want to retrieve. Except that our rows don't have names, so we use conditions on some of our columns instead. In the command below, the expression `year>2019` tells R that we want all the rows for which the column year has a value greater than 2019 - this is equivalent to asking for all movies released in 2020 (or later)
 
 ```{r filter_1, exercise = TRUE}
 filter(imdb, year>2019)
@@ -155,15 +169,17 @@ filter(imdb, year>2019)
 In R, the syntax to check if a value is greater or lower than another value is intuitive. You use the symbols `>` and `<`.
 However, to check if a value is EQUAL TO another value, you need to use `==`, not `=`. That's because a single equal has another use:
 
-- A single equals sign is a *statement*. So `x=y` sets x to be equal y.
-- A double equals sign is a *question*. Therefore `x==y` asks *is x equal to y?*
+- A single equals sign is a *statement*. When you write `x=y`, it sets x to be equal y.
+- A double equals sign is a *question*. When you write `x==y`, you're asking R *is x equal to y?*. If the response is yes, the condition is verified.
 
 So to retrieve all the entries directed by Quentin Tarantino, we use the double equals sign.
 ```{r filter_2, exercise = TRUE}
 filter(imdb, director=="Quentin Tarantino")
 ```
+In the command above R will check all the rows of the dataset imdb - it does it very quickly, don't worry - and return the ones where the column director takes the value "Quentin Tarantino". Note the quotes around "Quentin Tarantino". Whenever you write a string of text that is not an object or a column, you need to encapsulate it between quotes. Otherwise, R will try to interpret it as an object or the name of a column.
 
-Note that in R, you will not always get an error when your command is incorrect. For example, if you misspell "Quentin Tarantino" you will just get no result:
+
+Also note that in R, you will not always get an error when you make a mistake. For example, if you misspell "Quentin Tarantino" you will just get no result:
 
 ```{r filter_3, exercise = TRUE}
 filter(imdb, director=="Quentin Tarentino")
@@ -174,19 +190,21 @@ That's because even though R does not give you the answer you want, the command 
 
 ### using multiple conditions
 
-You can also use multiple conditions and additional functions to filter rows. Here are the logical symbols that you can use when building conditions in R:
+You can also use multiple conditions and additional functions to filter rows. Here are the main logical symbols that you can use when building conditions in R:
 
-`==` means EQUALS  
+`==` means EQUALS
+`!=` means DIFFERENT
 `&` means AND  
 `!` means NOT  
 `|` means OR  
-`<` means LOWER THAN  
+`<` means LESS THAN  
 `>` means GREATER THAN  
-`<=` means LOWER OR EQUAL TO  
-`>=` means GREATER OR EQUAL TO
+`<=` means LESS THAN OR EQUAL TO  
+`>=` means GREATER THAN OR EQUAL TO
 
+If you're not familiar with the use of logical operations, have a look at the first 3 minutes of this video <a href="https://www.youtube.com/watch?v=6PpQS-YLWDQ" target="_blank"> R Tutorial - Logical Operators and Vectors in R </a>
 
-Let's try to retrieve the rows corresponding to entries of type `movie`, that are of length greater than three hours (180 minutes), and that were released in 2019 or later. Do you know some of these movies?
+Let's use multiple conditions in an example. I am interested in finding a list of the movies released since 2019 which were at least three hours long. So to obtain this, we will write a filter command where the conditions to keep the rows are that the column `type` is equal to "movie" and the column `year` is greater than or equal to 2019 and the column `length` is greater than or equal to 180 (since length is recorded in minutes).
 
 ```{r filter_4, exercise = TRUE}
 filter(imdb, type=="movie" & length>180 & year>=2019)
@@ -194,16 +212,44 @@ filter(imdb, type=="movie" & length>180 & year>=2019)
 
 The command above looks complicated, but it really isn't. We are just asking for the rows that satisfy the condition:
 
-> type EQUALS "movie" AND length is GREATER THAN 180 minutes AND year of release is GREATER OR EQUAL TO 2019.
+> type EQUALS "movie" AND length is GREATER THAN 180 AND year of release is GREATER THAN OR EQUAL TO 2019.
 
 
+If we were more into short entries than long films, we could instead ask R to retrieve the rows where `type` is equal to "short" OR `type` is equal to "tvShort" AND `year` is GREATER THAN OR EQUAL TO 2019. Let's try:
+```{r filter_4b, exercise = TRUE}
+filter(imdb, type=="short" | type=="tvShort" & year>=2019)
+```
 
-We can also use functions like `max()` or `min()` to help us with the filtering. Let's do what we are all dying to do: Find out which entry in the imdb dataset is rated the worst!
+Hmm it doesn't seem work. We see short entries, but the year is not limited to 2019 and above. That's because the operator AND has *priority* over OR. This type of priority is similar to the priority of multiplication over addition or subtraction. In maths, the result of the calculation 2 + 2 x 3 is 8. To have the addition 2 + 2 performed before the multiplication 2 x 3, we need to add brackets: (2 + 2) x 3. It is the same with OR and AND. So in the command above, we need to add round brackets to surround the OR statement:
+
+```{r filter_4c, exercise = TRUE}
+filter(imdb, (type=="short" | type=="tvShort") & year>=2019)
+```
+
+Using round brackets, we can force R to check the exact conditions that we want. Make sure that you always close all the brackets though. Otherwise R will get stuck waiting for a closing bracket or give you an error. Check your brackets!
+
+```{r filter_4d, exercise = TRUE}
+filter(imdb, (type=="short" | type=="tvShort" & year>=2019)
+```
+
+
+In the condition statement, we can also use functions like `max()` or `min()` to help us with the filtering. Let's do what we are all dying to do: Find out which entry in the imdb dataset is rated the worst!
 ```{r filter_5, exercise = TRUE}
 filter(imdb, averageRating==min(averageRating))
 ```
 
+In the command above, R first calculates the result of `min(averageRating)` in the dataframe imdb, which is:
+```{r filter_5a, exercise = TRUE}
+min(imdb$averageRating)
+```
+
+And it then performs the corresponding filtering:
+```{r filter_5b, exercise = TRUE}
+filter(imdb, averageRating==1)
+```
+
 Weirdly, when I look at the number of votes, this result kinda makes me want to watch the movie released in 2017. I think I'll pass on the Justin Bieber one though.
+
 
 As you see, we didn't get one single result here. That's because filter retrieves *all* the rows that satisfy the specified condition, and we have several entries that have an average rating of 1!
 
@@ -217,7 +263,8 @@ As you see, we didn't get one single result here. That's because filter retrieve
 filter(imdb, averageRating==max(averageRating))
 ```
 
-Don't spend too much time googling this movie. We still have lots to do.
+Don't spend too much time Googling this movie. We still have lots to do.
+
 
 
 ## arrange()
@@ -231,13 +278,20 @@ Let's try:
 ```{r arrange_1, exercise = TRUE}
 arrange(imdb, numVotes)
 ```
-Huh, I don't know any of these entries! That's because by default, `arrange()` orders your dataset by increasing values of the indicated column. To order the other way, we need to encapsulate our column inside the function `desc()` - "desc" for *descending*
+Huh, I don't know any of these entries! That's because by default, `arrange()` orders your dataset by increasing values of the indicated column. To order from highest to lowest, we need to place our column inside the function `desc()` - "desc" for *descending*
 
 ```{r arrange_2, exercise = TRUE}
 arrange(imdb, desc(numVotes))
 ```
 
-**Question: What are the shortest entries of the imdb dataset?**
+We can also arrange the rows by multiple columns. Let's try and order our dataset to show the worst entries again, but with the ones having received the highest number of votes at the top. To do that, we first arrange by average rating, and then by decreasing values of the number of votes. We separate the columns with a comma: 
+
+```{r arrange_2b, exercise = TRUE}
+arrange(imdb, averageRating, desc(numVotes))
+```
+
+
+**Question: Which entries of the imdb dataset have the shortest running times?**
 ```{r arrange_3, exercise = TRUE}
 
 ```
@@ -247,67 +301,86 @@ arrange(imdb, length)
 ```
 
 
-## summarize()
+## summarise()
 
-The next function we need to learn about is `summarize()`, which summarizes our dataset to one single row, by performing the calculation that we indicate after the first argument, which is the dataframe.
+The next function we need to learn about is `summarise()`, which calculates summaries of variables within our dataset. As with all the other dplyr functions, the first argument is the name of our data. The second argument provides a summary function..
 
-For example, to know the total number of votes of the imdb dataset we could calculate the sum of the column number of votes using the function `sum()`
+For example, to know the total number of votes of all the entries in the imdb dataset we could calculate the sum of numVotes using the function `sum()`
 ```{r summarize_1, exercise = TRUE}
 summarise(imdb, sum(numVotes))
 ```
 
-It's good to give a proper name to the calculations that we do though, especially if later, we want to use the result of such command:
+This seems equivalent to doing 
+```{r summarize_1b, exercise = TRUE}
+sum(imdb$numVotes)
+```
 
+Except that with summarise, the output is a dataframe, which is extremely useful if we want to use our summaries later or combine our command with other manipulations.
+
+And we should give a proper name for the output column containing our summary statistic. This can make the output appear cleaner, and make using the result of this calculation easier in later steps. To do this we place the name we would like the summary to have followed by a single equals sign, just in front of our calculation.
 ```{r summarize_2, exercise = TRUE}
 summarise(imdb, totVotes=sum(numVotes))
 ```
+Note that we use the single equals sign, not the double equals sign, because we are assigning our summary statistics `sum(numVotes)` to a column called `totVotes`.
+
+
+**Remark**: You may sometimes see people use summari**z**e() instead of summari**s**e() like I do in the video. They are identical. The people who made dplyr are from New Zealand, where they use the British spelling summari**s**e(). But they are very nice people and decided to allow for the American spelling as well.
+
+
+
 
 We can also ask R to give us more than one summary, by listing the calculations we want to perform, separated with commas.
 
 ```{r summarize_3, exercise = TRUE}
 summarise(imdb, entries=n(), meanVotes=mean(numVotes), meanRating=mean(averageRating), sdRating=sd(averageRating))
 ```
-Here we used the functions `mean()` and `sd()` to calculate the mean, and standard deviation of the column inside their parenthesis. We also used the function `n()`, which simply counts the number of rows.
+Here we used the functions `mean()` and `sd()` to calculate the mean, and standard deviation of the named column inside the brackets. We also used the function `n()`, which simply counts the number of rows.
 
-**Question: Use the function summarize to calculate both, the earliest, and the median year of release of all the entries? Give sensible names to these calculations. Are you surprised by the results? - Reminder: the function to calculate the median is median()**
+**Question: Use summarise to calculate the earliest year of release and the median year of release of all the entries in the imdb dataset? Give sensible names to the output of these calculations. - Reminder: the function to calculate the median is median()**
 ```{r summarize_4, exercise = TRUE}
 
 ```
+Are you surprised by the results?
 
 ```{r summarize_4-solution}
-summarize(imdb, ealiestYear = min(year), medianYear = median(year)) 
+summarise(imdb, ealiestYear = min(year), medianYear = median(year)) 
 
 # Personally, I was expecting the median year of release to be relatively recent, but probably not as recent as 2005. Given the definition of the median, this result means that all the entries released between 1874 and 2005 count for only 50% of all the entries!
 # I'm pretty sure though, that this number does not accurately reflect the actual amount of cinematographic creations released in the early years, as I suspect that most of the not so famous creations have not been entered in the database. Plus lots of the early entries may have fewer votes than the equivalent recent ones and so they may not have passed the cut off of 500 votes to be in the dataset.
 ```
 
 
-
 ## mutate()
 
-The last function in this workbook is `mutate()`. It is used to modify or create new columns. The syntax is as follows: We indicate our dataset first, as always, and then we provide the calculations that we want to perform for our new columns.
+The last function in this workbook is `mutate()`. It is used to modify existing columns or to create new columns. The syntax is as follows: We indicate our dataset first, as always, and then we provide the calculations that we want to perform for our new columns.
 
-For example, if we wanted to roughly calculate the age of the director at the time of release of their entries, we could subtract the year of birth from the year of release:
+For example, if we wanted to calculate the age of the director at the time of release of their entries, we could subtract the year of birth from the year of release:
 
 ```{r mutate_1, exercise = TRUE}
 mutate(imdb, age = year-birthYear)
 ```
 
-Like for the summarize function, we could omit naming our new column, but then R would just use the calculation itself as the column name. That's what happened in the video, I know. I never said I was a great example!
+Like for the summarise function, we could omit naming our new column, but then R would just use the calculation itself as the column name. That's what happened in the video, I know. I never said I was a great example!
+
+You can see that the new column `age` appears at the very end of the dataset. We could use `select()` to move it more towards the beginning of our columns, but combining dplyr functions is a topic for the next workbook. Also note that our column `age` contains lots of NA values. That's what happen when R is unable to determine the result of a calculation. The year of birth was missing for quite a number of directors, so R couldn't calculate the age and returned NA.
 
 
 
 
-In mutate like in summarize, we can use functions like `mean()`, `max()`, etc. in our calculation. Let's create an indicator of popularity of an entry, by dividing the number of votes for a specific entry by the maximum number of votes of any entry in the dataset
+In mutate like in summarise, we can use functions like `mean()`, `max()`, etc. in our calculation. Let's create an indicator of popularity of an entry, by dividing the number of votes for a specific entry by the maximum number of votes of any entry in the dataset. This will give us a score between 0 and 1, where an entry has a value close to 1 if it received a number of votes that is close to the maximum number of votes, and a value close to 0 if it received only few votes.
 
 ```{r mutate_2, exercise = TRUE}
 mutate(imdb, popularity = numVotes/max(numVotes))
 ```
 
-This indicator will take the value of 1 for the most popular entry and a value very close to 0 for the entries that received only 500 votes.
+You may see that most entries have a popularity score close to 0 because the variable `numVotes`  is highly skewed. A popular transformation to deal with such issue is to apply the function `logarithm()`:
+
+```{r mutate_2b, exercise = TRUE}
+mutate(imdb, popularity = log(numVotes/max(numVotes)))
+```
 
 
-Finally, we can create multiple columns at once, by separating the associated calculations with commas.
+We can create multiple columns at once, by separating the associated calculations with commas.
 
 ```{r mutate_3, exercise = TRUE}
 mutate(imdb, age = year-birthYear, popularity = numVotes/max(numVotes))
@@ -321,19 +394,20 @@ mutate(imdb, length = length/60)
 You need to be careful when modifying existing columns though. In general, as it's not too much of a pain to have lots of columns - since we have the function `select()` to pick the ones we want - we often prefer to create new columns rather than modifying existing ones.
 
 
-**Question: calculate the number of votes by minute of screening received by the entries of the imdb dataset. Give it a sensible name**
+**Question: calculate the number of votes received by the entries of the imdb dataset per minute of running time. This would give us some kind of popularity efficiency measure. Give it a sensible name**
 
 ```{r mutate_5, exercise = TRUE}
 
 ```
 
 ```{r mutate_5-solution}
-mutate(imdb, votesByMin = numVotes/length)
+mutate(imdb, votesPerMin = numVotes/length)
 
 ```
 
 
-Ok, I'm starting to be frustrated now, because the columns we created with mutate() seem quite interesting, but they are kinda useless if we don't use other functions to explore them further. Next workbook pleaaaase!
+Ok, I'm starting to be frustrated now, because what I was interesting in with the last question is to further find the entries that are the most "efficient" in their use of film reel to gain popularity. But for that, we need to know how to combine the functions that we saw in this workbook to perform some sequence of manipulations.
+Next workbook pleaaaase!
 
 ## Appendix: Useful reference links  
 

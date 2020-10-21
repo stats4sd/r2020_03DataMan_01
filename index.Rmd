@@ -13,7 +13,7 @@ description: >
 
 ## Overview
 
-In this session, we will learn how to manipulate data and in particular, to select/modify/create columns, filter/order rows and calculate summaries. Knowing how to manipulate data is an essential skill that anyone working with data needs to acquire. Except for a few "base-R" commands at the very beginning, we will focus on using the package `dplyr`, which is part of tidyverse, like ggplot2, and is probably the most commonly used package when it comes to this sort of data manipulation. I'm saying this *sort of data manipulation*, because we are not going to talk about more advanced manipulations like merging datasets or going from wide to long format. We will discuss these later, during the last session of the course.
+In this session, we will learn how to manipulate data and in particular, to select/modify/create columns, filter/order rows and calculate summaries. Knowing how to manipulate data is an essential skill that anyone working with data needs to acquire. We will focus on using the package `dplyr`, which is part of tidyverse, like ggplot2, and is probably the most commonly used package when it comes to this sort of data manipulation. I'm saying this *sort of data manipulation*, because we are not going to talk about more advanced manipulations like merging datasets or going from wide to long format. We will discuss these later, during the last session of the course.
 
 This session is split into two parts, and you'll have a series of exercises and questions along the way and at the end.
 
@@ -192,17 +192,18 @@ That's because even though R does not give you the answer you want, the command 
 
 You can also use multiple conditions and additional functions to filter rows. Here are the main logical symbols that you can use when building conditions in R:
 
-`==` means EQUALS
-`!=` means DIFFERENT
-`&` means AND  
-`!` means NOT  
-`|` means OR  
+ `==` means EQUALS  
+`!=` means DIFFERENT  
 `<` means LESS THAN  
 `>` means GREATER THAN  
 `<=` means LESS THAN OR EQUAL TO  
 `>=` means GREATER THAN OR EQUAL TO
 
-If you're not familiar with the use of logical operations, have a look at the first 3 minutes of this video <a href="https://www.youtube.com/watch?v=6PpQS-YLWDQ" target="_blank"> R Tutorial - Logical Operators and Vectors in R </a>
+`&` means AND  
+`|` means OR  
+`!` means NOT 
+
+If you're not familiar with the use of logical operations, have a look at the first 3 minutes of this video: <a href="https://www.youtube.com/watch?v=6PpQS-YLWDQ" target="_blank"> R Tutorial - Logical Operators and Vectors in R </a>
 
 Let's use multiple conditions in an example. I am interested in finding a list of the movies released since 2019 which were at least three hours long. So to obtain this, we will write a filter command where the conditions to keep the rows are that the column `type` is equal to "movie" and the column `year` is greater than or equal to 2019 and the column `length` is greater than or equal to 180 (since length is recorded in minutes).
 
@@ -220,7 +221,7 @@ If we were more into short entries than long films, we could instead ask R to re
 filter(imdb, type=="short" | type=="tvShort" & year>=2019)
 ```
 
-Hmm it doesn't seem work. We see short entries, but the year is not limited to 2019 and above. That's because the operator AND has *priority* over OR. This type of priority is similar to the priority of multiplication over addition or subtraction. In maths, the result of the calculation 2 + 2 x 3 is 8. To have the addition 2 + 2 performed before the multiplication 2 x 3, we need to add brackets: (2 + 2) x 3. It is the same with OR and AND. So in the command above, we need to add round brackets to surround the OR statement:
+Hmm it doesn't seem to work. We see short entries, but the year is not limited to 2019 and above. That's because the operator AND has *priority* over OR. This type of priority is similar to the priority of multiplication over addition or subtraction. In maths, the result of the calculation 2 + 2 x 3 is 8. To have the addition 2 + 2 performed before the multiplication 2 x 3, we need to add brackets: (2 + 2) x 3. It is the same with OR and AND. So in the command above, we need to add round brackets to surround the OR statement:
 
 ```{r filter_4c, exercise = TRUE}
 filter(imdb, (type=="short" | type=="tvShort") & year>=2019)
@@ -290,8 +291,14 @@ We can also arrange the rows by multiple columns. Let's try and order our datase
 arrange(imdb, averageRating, desc(numVotes))
 ```
 
+As this section is a bit shorter than the other ones, let me briefly introduce you to the function `slice()`, which is quite useful to quickly retrieve specific rows by position. The syntax is similar to all the core functions of dplyr. The data is the first argument, and then we indicate the rows that we want. Since `1:5` is a shorthand for `c(1,2,3,4,5)`, we can retrieve the first 5 rows of our dataset with the following command:
+```{r arrange_slice, exercise = TRUE}
+slice(imdb, 1:5)
+```
+`slice()` is often useful after `arrange()`, to retrieve the few rows that have the highest or lowest values for the column used to order the rows.
 
-**Question: Which entries of the imdb dataset have the shortest running times?**
+
+**Question: Use the function `arrange()` to determine the entries in the imdb dataset that have the shortest running times?**
 ```{r arrange_3, exercise = TRUE}
 
 ```
@@ -367,26 +374,48 @@ You can see that the new column `age` appears at the very end of the dataset. We
 
 
 
-In mutate like in summarise, we can use functions like `mean()`, `max()`, etc. in our calculation. Let's create an indicator of popularity of an entry, by dividing the number of votes for a specific entry by the maximum number of votes of any entry in the dataset. This will give us a score between 0 and 1, where an entry has a value close to 1 if it received a number of votes that is close to the maximum number of votes, and a value close to 0 if it received only few votes.
+In mutate like in summarise, we can use functions like `mean()`, `max()`, etc. in our calculation. Let's create an indicator of popularity, by dividing the number of votes for a specific entry by the maximum number of votes of any entry in the dataset. This will give us a score between 0 and 1, where an entry has a value close to 1 if it received a number of votes that is close to the maximum number of votes, and a value close to 0 if it received only few votes. Yes, I consider that a popular entry is one that receives lots of votes.
 
 ```{r mutate_2, exercise = TRUE}
 mutate(imdb, popularity = numVotes/max(numVotes))
 ```
 
-You may see that most entries have a popularity score close to 0 because the variable `numVotes`  is highly skewed. A popular transformation to deal with such issue is to apply the function `logarithm()`:
+You may see that most entries have a popularity score close to 0 because the variable `numVotes`  is highly skewed. A popular transformation to deal with such issue is to apply the function `log()` for logarithm:
 
 ```{r mutate_2b, exercise = TRUE}
 mutate(imdb, popularity = log(numVotes/max(numVotes)))
 ```
 
+So far, we've only created numeric variables, but we can also create categorical variables with mutate. Doing so is actually a good opportunity to learn about another very useful base-R function: `ifelse()`, which checks every row for a condition and returns a value. `ifelse()` takes three arguments. A condition to verify, a value that is returned if the condition is verified, and a value returned if the condition is **not** verified. So the syntax is:
 
-We can create multiple columns at once, by separating the associated calculations with commas.
+'ifelse'(`CONDITION`, `VALUE IF CONDITION IS TRUE`, `VALUE IF CONDITION IS FALSE`)
 
-```{r mutate_3, exercise = TRUE}
-mutate(imdb, age = year-birthYear, popularity = numVotes/max(numVotes))
+Let's try with a simple example. The column year of release takes the following numeric values:
+```{r mutate_2c, exercise = TRUE}
+imdb$year
 ```
 
-Also note that I said that mutate can also "modify" a column. You achieve that by using an already existing column as the name of the new column. For example, to make our column name show the duration of the entries in hours rather than minutes, we could do the following:
+To generate a variable that takes the value "recent" if the year of release is greater than 2000 and "old"  if it's not, we can use the following command:
+
+```{r mutate_2d, exercise = TRUE}
+ifelse(imdb$year>2000, "recent", "old")
+```
+
+And we can do the same, but inside the function mutate, to add this variable to our dataset. We need to remove "imdb$" from the command though, since the data is already indicated in the first argument of mutate.
+
+```{r mutate_2e, exercise = TRUE}
+mutate(imdb, yearsCat = ifelse(year>2000, "recent", "old"))
+```
+
+
+Of course, we can create multiple columns at once. We simply need to separate the associated calculations with commas.
+
+```{r mutate_3, exercise = TRUE}
+mutate(imdb, age = year-birthYear, popularity = numVotes/max(numVotes), yearsCat = ifelse(year>2000, "recent", "old"))
+```
+
+
+Also note that I said that mutate can also "modify" a column. You achieve that by using an already existing column as the name of the new column. For example, to make our column `length` be the running time in hours rather than in minutes, we could do the following:
 
 ```{r mutate_4, exercise = TRUE}
 mutate(imdb, length = length/60)

@@ -55,7 +55,7 @@ For this session, we are going to use a dataset called "imdb", which we construc
 <a href="https://www.imdb.com/interfaces/" target="_blank">https://www.imdb.com/interfaces/</a>
 
 
-It contains the following informations for all the entries having more than 500 votes, that are not of type "tvEpisodes" and for which information about year of release, running time and director(s) was available at the time of extraction (28/09/2020):  
+It contains the following information for all the entries having more than 500 votes, that are not of type "tvEpisodes" and for which information about year of release, running time and director(s) was available at the time of extraction (28/09/2020):  
 
 
 ```{r, echo=FALSE,message=FALSE,warning=FALSE}
@@ -362,7 +362,7 @@ mutate(imdb, age = year-birthYear)
 
 Like for the summarise function, we could omit naming our new column, but then R would just use the calculation itself as the column name. That's what happened in the video, I know. I never said I was a great example!
 
-You can see that the new column `age` appears at the very end of the dataset. We could use `select()` to move it more towards the beginning of our columns, but combining dplyr functions is a topic for the next workbook. Also note that our column `age` contains lots of NA values. That's what happen when R is unable to determine the result of a calculation. The year of birth was missing for quite a number of directors, so R couldn't calculate the age and returned NA.
+You can see that the new column `age` appears at the very end of the dataset. We could use `select()` to move it more towards the beginning of our columns, but combining dplyr functions is a topic for the next workbook. Also note that our column `age` contains lots of NA values. That's what happens when R is unable to determine the result of a calculation. The year of birth was missing for quite a number of directors, so R couldn't calculate the age and returned NA.
 
 
 
@@ -406,7 +406,7 @@ mutate(imdb, votesPerMin = numVotes/length)
 ```
 
 
-Ok, I'm starting to be frustrated now, because what I was interesting in with the last question is to further find the entries that are the most "efficient" in their use of film reel to gain popularity. But for that, we need to know how to combine the functions that we saw in this workbook to perform some sequence of manipulations.
+Ok, I'm starting to be frustrated now, because what I was interested in with the last question is to further find the entries that are the most "efficient" in their use of film reel to gain popularity. But for that, we need to know how to combine the functions that we saw in this workbook to perform some sequence of manipulations.
 Next workbook pleaaaase!
 
 ## Appendix: Useful reference links  

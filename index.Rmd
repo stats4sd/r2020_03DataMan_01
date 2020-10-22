@@ -32,9 +32,7 @@ This session is split into two parts, and you'll have a series of exercises and 
 
 Let's start with a video where I give you more information about data manipulation, the package dplyr and its core functions.
 
-[Embed video #1]
-
-
+![](https://youtu.be/koj23uKL45I)
 
 ### loading dplyr
 

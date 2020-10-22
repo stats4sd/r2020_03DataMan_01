@@ -393,23 +393,23 @@ Let's try with a simple example. The column year of release takes the following 
 imdb$year
 ```
 
-To generate a variable that takes the value "recent" if the year of release is greater than 2000 and "old"  if it's not, we can use the following command:
+To generate a variable that takes the value "21st Century" if the year of release is greater than 2000 and "20th Century"  if it's not, we can use the following command:
 
 ```{r mutate_2d, exercise = TRUE}
-ifelse(imdb$year>2000, "recent", "old")
+ifelse(imdb$year>=2000, "21st Century", "20th Century")
 ```
 
 And we can do the same, but inside the function mutate, to add this variable to our dataset. We need to remove "imdb$" from the command though, since the data is already indicated in the first argument of mutate.
 
 ```{r mutate_2e, exercise = TRUE}
-mutate(imdb, yearsCat = ifelse(year>2000, "recent", "old"))
+mutate(imdb, yearsCat = ifelse(year>2000, "21st Century", "20th Century"))
 ```
 
 
 Of course, we can create multiple columns at once. We simply need to separate the associated calculations with commas.
 
 ```{r mutate_3, exercise = TRUE}
-mutate(imdb, age = year-birthYear, popularity = numVotes/max(numVotes), yearsCat = ifelse(year>2000, "recent", "old"))
+mutate(imdb, age = year-birthYear, popularity = numVotes/max(numVotes), yearsCat = ifelse(year>2000, "21st Century", "20th Century"))
 ```
 
 
